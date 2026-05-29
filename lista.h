@@ -17,6 +17,9 @@ posición. La memoria reservada para el elemento debe liberarse correspondientem
     //Pre: 1<= longitud
     void borrarUltimo();  
     void borrarIesimo(const int pos); 
+    //Pre: Longitud() > 0
+    T cursor(); // es basicamente una segunda lista???
+    void avanzar(); 
 
     // Pre: 0 <= posicion < longitud()
     T iesimo(const int posicion);
@@ -28,13 +31,13 @@ posición. La memoria reservada para el elemento debe liberarse correspondientem
             nodo* siguiente;
             nodo* _anterior; 
         };
-
+        nodo* _cursor;
         nodo* _primero;
         nodo* _ultimo; // puedo suponer ya como doblemente anclada???
         int _longitud;
 };
 template <typename T> // lo repito en todos lados para que sepa que es un T generico???
-Lista<T>::Lista() : _primero(nullptr), _longitud(0), _ultimo(nullptr) {}
+Lista<T>::Lista() : _primero(nullptr), _longitud(0), _ultimo(nullptr), _cursor(nullptr) {}
 template <typename T>
 int Lista<T>::longitud() {
     return _longitud;
@@ -47,6 +50,10 @@ void Lista<T>::agregarAtras(const T elemento) {
           _primero = nuevo;
           _ultimo = nuevo;
           nuevo -> _anterior = _ultimo; //enlazada como ciculo??
+          //primer elemento es cursor 
+          _cursor = nuevo;
+        
+
     } else {
         // avanzo hasta que `actual` sea el último nodo
         nodo* actual = _primero;
@@ -88,16 +95,29 @@ void Lista<T>::borrarUltimo(){
     //tengo que poder llegar al anterior de ultimo o que ultimo sea doble enlazado asi puedo acceder a esa pos.
    // Caso 1: La lista tiene un único elemento
     if (_longitud == 1) { 
+        
         delete _ultimo;
         _primero = nullptr;
         _ultimo = nullptr;
+        _cursor = nullptr; 
+        
     } 
     // Caso 2: La lista tiene 2 o más elementos
     else {
-        nodo* nuevoUltimo = _ultimo->_anterior; // Guardo el penúltimo
-        nuevoUltimo->siguiente = nullptr;
-        delete _ultimo;
-        _ultimo = nuevoUltimo;
+        if (_ultimo == _cursor){
+            nodo* nuevoUltimo = _ultimo->_anterior; // Guardo el penúltimo
+            nuevoUltimo->siguiente = nullptr;
+            delete _ultimo;
+            _ultimo = nuevoUltimo;
+            _cursor = _ultimo;
+        }
+        else{
+            nodo* nuevoUltimo = _ultimo->_anterior; // Guardo el penúltimo
+            nuevoUltimo->siguiente = nullptr;
+            delete _ultimo;
+            _ultimo = nuevoUltimo;
+        }
+       
     }
 
     _longitud--;
@@ -107,6 +127,12 @@ template<typename T>
 void Lista<T>::borrarIesimo(const int pos){
     if (pos == 0){
         nodo* actual = _primero->siguiente;
+        if (_primero == _cursor){
+            _cursor = _primero->siguiente;
+            delete _primero;
+            _primero = actual;
+            _longitud --;
+        }
         delete _primero;
         _primero = actual;
         _longitud --;
@@ -118,9 +144,24 @@ void Lista<T>::borrarIesimo(const int pos){
         actual = actual->siguiente;
         i++;
     }
+    if(actual == _cursor && actual->siguiente == nullptr){
+        _cursor= actual->_anterior
+        actual->_anterior->siguiente = actual->siguiente;
+        delete actual;
+        _longitud --;}
+    
+    if (actual == _cursor && actual->siguiente != nullptr){}
+        actual->_anterior->siguiente = actual->siguiente;
+        _cursor = actual->siguiente;
+        delete actual;
+        _longitud --;
+    }
     actual->_anterior->siguiente = actual->siguiente;
     delete actual;
     _longitud --;
     }
+template<typename T>
+T Lista<T>::cursor(){
+    return *_cursor; 
 }
 #endif

@@ -10,7 +10,7 @@ TEST(PunterosTest, 00) {
     EXPECT_EQ(2, *puntero_a_numero);
 
     // TODO: Pensar... ¿es necesario liberar memoria?
-    // no porque no pedi memoria?
+    // no porque no pedi memoria? salgo del scope y se borra
 }
 
 TEST(PunterosTest, 01) {
