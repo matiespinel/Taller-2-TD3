@@ -18,8 +18,9 @@ posición. La memoria reservada para el elemento debe liberarse correspondientem
     void borrarUltimo();  
     void borrarIesimo(const int pos); 
     //Pre: Longitud() > 0
-    T cursor(); // es basicamente una segunda lista???
+    T cursor(); 
     void avanzar(); 
+    void retroceder();
 
     // Pre: 0 <= posicion < longitud()
     T iesimo(const int posicion);
@@ -92,9 +93,11 @@ Lista<T>::~Lista() {
 
 template<typename T>
 void Lista<T>::borrarUltimo(){
+    borrarIesimo(_longitud - 1);
     //tengo que poder llegar al anterior de ultimo o que ultimo sea doble enlazado asi puedo acceder a esa pos.
    // Caso 1: La lista tiene un único elemento
-    if (_longitud == 1) { 
+   //IMPLEMENTACION CON LISTA DOLBEMENTE ENLAZADA O(1) (creo??)
+    /*if (_longitud == 1) { 
         
         delete _ultimo;
         _primero = nullptr;
@@ -120,48 +123,86 @@ void Lista<T>::borrarUltimo(){
        
     }
 
-    _longitud--;
+    _longitud--; */
+    
 }
 template<typename T>
-//Pre: // Pre: 0 <= posicion < longitud() 
 void Lista<T>::borrarIesimo(const int pos){
     if (pos == 0){
         nodo* actual = _primero->siguiente;
         if (_primero == _cursor){
-            _cursor = _primero->siguiente;
-            delete _primero;
-            _primero = actual;
-            _longitud --;
+            _cursor = actual; 
+        }
+        if (_primero == _ultimo) {
+            _ultimo = nullptr;
         }
         delete _primero;
         _primero = actual;
-        _longitud --;
+        _longitud--;
+        if (_primero != nullptr) {
+            _primero->_anterior = nullptr;// asi no queda colgado el puntero en cualquiera??
+        }
     }
     else{
-    nodo* actual = _primero;
-    int i = 0;
-    while (i < pos){
-        actual = actual->siguiente;
-        i++;
+        nodo* actual = _primero;
+        int i = 0;
+        while (i < pos){
+            actual = actual->siguiente;
+            i++;
+        }
+        
+        if(actual == _cursor && actual->siguiente == nullptr){ // soy el ultimo y el cursor
+            _cursor = actual->_anterior;
+            actual->_anterior->siguiente = actual->siguiente;
+            delete actual;
+            _ultimo = _cursor;
+            _longitud --;
+        }
+        else if (actual == _cursor && actual->siguiente != nullptr){ // soy el cursor en el medio
+            actual->_anterior->siguiente = actual->siguiente;
+            actual->siguiente->_anterior = actual->_anterior; 
+            _cursor = actual->siguiente;
+            delete actual;
+            _longitud --;
+        }
+        else{ // no cursor
+            if(actual == _ultimo){ // soy el ultimo
+                actual->_anterior->siguiente = nullptr; 
+                _ultimo = actual->_anterior;
+                delete actual; 
+                _longitud --;
+            }
+            else{ // estoy en el medio
+                actual->_anterior->siguiente = actual->siguiente;
+                actual->siguiente->_anterior = actual->_anterior; 
+                delete actual;
+                _longitud --;
+            }
+        }
     }
-    if(actual == _cursor && actual->siguiente == nullptr){
-        _cursor= actual->_anterior
-        actual->_anterior->siguiente = actual->siguiente;
-        delete actual;
-        _longitud --;}
-    
-    if (actual == _cursor && actual->siguiente != nullptr){}
-        actual->_anterior->siguiente = actual->siguiente;
-        _cursor = actual->siguiente;
-        delete actual;
-        _longitud --;
-    }
-    actual->_anterior->siguiente = actual->siguiente;
-    delete actual;
-    _longitud --;
-    }
+}
 template<typename T>
 T Lista<T>::cursor(){
-    return *_cursor; 
+    return (*_cursor).elemento; 
 }
+template<typename T>
+void Lista<T>::avanzar(){
+    if(_cursor == _ultimo){
+        //nop hago nada 
+    }
+    else{
+        _cursor = _cursor->siguiente; 
+    }
+}
+template<typename T>
+void Lista<T>::retroceder(){
+    if(_cursor == _primero){
+        // no hago nada 
+    }
+    else{
+        _cursor = _cursor->_anterior; 
+    }
+}
+
+
 #endif
